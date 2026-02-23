@@ -15,15 +15,15 @@ def has_gdb_on_path(gdb) -> bool:
 def has_dfu_util_on_path() -> bool:
 
     try:
-        gdb_version = subprocess.check_output(["dfu-util", "--version"], text=True).strip()
+        dfu_util_version = subprocess.check_output(["dfu-util", "--version"], text=True).strip()
     except subprocess.CalledProcessError:
         raise Exception("Your dfu-util installation appears to be broken. Install on macOS with 'brew install dfu-util'.")
     return True
 
-def has_st32flash_on_path() -> bool:
+def has_stm32flash_on_path() -> bool:
 
     try:
-        gdb_version = subprocess.check_output(["stm32flash"], text=True).strip()
+        stm32flash_version = subprocess.check_output(["stm32flash"], text=True).strip()
     except subprocess.CalledProcessError:
         raise Exception("Your stm32flash installation appears to be broken. Install on macOS with 'brew install stm32flash'.")
     return True
@@ -70,7 +70,7 @@ def flash_via_gdb(gdb, bmp, firmware, enable_power):
         "monitor tpwr enable" if enable_power else "monitor tpwr disable",
     ]
     if enable_power:
-        cmd += ["--ex", "shell sleep 0.1"]
+        cmd += ["--ex", "shell sleep 0.1"] # if we don't sleep for a minute, the SWD scan fails because the chip hasnt had a chance to come up yet
     cmd += [
         "--ex",
         "monitor swdp_scan",
@@ -204,7 +204,7 @@ def main():
             flash_via_dfu(args.firmware)
 
     elif args.method == "uart":
-        if has_st32flash_on_path():
+        if has_stm32flash_on_path():
             flash_via_uart(args.firmware, args.uart)
 
 if __name__ == "__main__":
