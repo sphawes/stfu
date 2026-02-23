@@ -10,7 +10,7 @@ stfu dfu path/to/firmware.bin
 
 That's it. You tell it what method, and what firmware file. All detection of UART ports, dfu devices, and SWD programmers (currently just Black Magic Probes) happens automatically.
 
-This tool is intended to be used on MacOS only.
+This tool is intended to be used on MacOS only. Thank you to Thea Flowers for the original version of this!
 
 ## Installation
 
