@@ -4,12 +4,29 @@ import argparse
 import subprocess
 from pathlib import Path
 
-def check_dependencies() -> bool:
+def has_gdb_on_path(gdb) -> bool:
 
     try:
-        npm_version = subprocess.check_output(["npm", "--version"], text=True).strip()
+        gdb_version = subprocess.check_output([gdb, "--version"], text=True).strip()
     except subprocess.CalledProcessError:
-        raise Exception("Your npm installation appears to be broken.")
+        raise Exception("Your gdb installation appears to be broken. Install on macOS with 'brew install arm-none-eabi-gdb'.")
+    return True
+
+def has_dfu_util_on_path() -> bool:
+
+    try:
+        gdb_version = subprocess.check_output(["dfu-util", "--version"], text=True).strip()
+    except subprocess.CalledProcessError:
+        raise Exception("Your dfu-util installation appears to be broken. Install on macOS with 'brew install dfu-util'.")
+    return True
+
+def has_st32flash_on_path() -> bool:
+
+    try:
+        gdb_version = subprocess.check_output(["stm32flash"], text=True).strip()
+    except subprocess.CalledProcessError:
+        raise Exception("Your stm32flash installation appears to be broken. Install on macOS with 'brew install stm32flash'.")
+    return True
 
 
 def find_bmp() -> Path:
@@ -161,7 +178,6 @@ def flash_via_uart(firmware, uart):
 
 def main():
 
-
     parser = argparse.ArgumentParser()
     parser.add_argument("method")
     parser.add_argument("firmware", type=Path)
@@ -180,14 +196,16 @@ def main():
     print("----------------------------")
 
     if args.method == "swd":
-        
-        flash_via_gdb(args.gdb, args.bmp, args.firmware, args.enable_power)
-
+        if has_gdb_on_path(args.gdb):
+            flash_via_gdb(args.gdb, args.bmp, args.firmware, args.enable_power)
+            
     elif args.method == "dfu":
-        flash_via_dfu(args.firmware)
+        if has_dfu_util_on_path():
+            flash_via_dfu(args.firmware)
 
     elif args.method == "uart":
-        flash_via_uart(args.firmware, args.uart)
+        if has_st32flash_on_path():
+            flash_via_uart(args.firmware, args.uart)
 
 if __name__ == "__main__":
     main()
