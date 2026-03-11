@@ -27,7 +27,9 @@ def has_stm32flash_on_path() -> bool:
     try:
         stm32flash_version = subprocess.check_output(["which", "stm32flash"], text=True).strip()
     except subprocess.CalledProcessError:
-        raise Exception("Your stm32flash installation appears to be broken. Install on macOS with 'brew install stm32flash'.")
+        raise Exception(
+            "Your stm32flash installation appears to be broken. Install on macOS with 'brew install stm32flash'."
+        )
         pass
     return True
 
