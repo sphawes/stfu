@@ -1,31 +1,34 @@
-#!/usr/bin/env python3
-
 import argparse
 import subprocess
 from pathlib import Path
 
-def has_gdb_on_path(gdb) -> bool:
 
+def has_gdb_on_path(gdb) -> bool:
     try:
         gdb_version = subprocess.check_output([gdb, "--version"], text=True).strip()
     except subprocess.CalledProcessError:
-        raise Exception("Your gdb installation appears to be broken. Install on macOS with 'brew install arm-none-eabi-gdb'.")
+        raise Exception(
+            "Your gdb installation appears to be broken. Install on macOS with 'brew install arm-none-eabi-gdb'."
+        )
     return True
 
-def has_dfu_util_on_path() -> bool:
 
+def has_dfu_util_on_path() -> bool:
     try:
         dfu_util_version = subprocess.check_output(["dfu-util", "--version"], text=True).strip()
     except subprocess.CalledProcessError:
-        raise Exception("Your dfu-util installation appears to be broken. Install on macOS with 'brew install dfu-util'.")
+        raise Exception(
+            "Your dfu-util installation appears to be broken. Install on macOS with 'brew install dfu-util'."
+        )
     return True
 
-def has_stm32flash_on_path() -> bool:
 
+def has_stm32flash_on_path() -> bool:
     try:
-        stm32flash_version = subprocess.check_output(["stm32flash"], text=True).strip()
+        stm32flash_version = subprocess.check_output(["which", "stm32flash"], text=True).strip()
     except subprocess.CalledProcessError:
         raise Exception("Your stm32flash installation appears to be broken. Install on macOS with 'brew install stm32flash'.")
+        pass
     return True
 
 
@@ -41,6 +44,7 @@ def find_bmp() -> Path:
         raise RuntimeError("unable to find to black magic probe")
 
     return candidates[0]
+
 
 def find_uart() -> Path:
     candidates = [
@@ -70,7 +74,10 @@ def flash_via_gdb(gdb, bmp, firmware, enable_power):
         "monitor tpwr enable" if enable_power else "monitor tpwr disable",
     ]
     if enable_power:
-        cmd += ["--ex", "shell sleep 0.1"] # if we don't sleep for a minute, the SWD scan fails because the chip hasnt had a chance to come up yet
+        cmd += [
+            "--ex",
+            "shell sleep 0.1",
+        ]  # if we don't sleep for a minute, the SWD scan fails because the chip hasnt had a chance to come up yet
     cmd += [
         "--ex",
         "monitor swdp_scan",
@@ -107,6 +114,7 @@ def flash_via_gdb(gdb, bmp, firmware, enable_power):
         print("############################")
         print("Programming complete!")
 
+
 def flash_via_dfu(firmware):
     # accepts .bin files only
     if firmware.suffix != ".bin":
@@ -119,7 +127,7 @@ def flash_via_dfu(firmware):
         "-a",
         "0",
         "-D",
-        f"{firmware}"
+        f"{firmware}",
     ]
 
     try:
@@ -137,14 +145,17 @@ def flash_via_dfu(firmware):
         print("############################")
         print("Programming complete!")
 
-    
-    
+
 def flash_via_uart(firmware, uart):
     # accepts .bin files only
     if firmware.suffix != ".bin":
         raise ValueError("firmware must be a .bin file")
 
-    uart = uart or find_uart()
+    if uart is None:
+        uart = find_uart()
+
+    print("test")
+    print(uart)
 
     cmd = [
         "stm32flash",
@@ -155,7 +166,7 @@ def flash_via_uart(firmware, uart):
         "-v",
         "-g",
         "0x0",
-        f"{uart}"
+        f"{uart}",
     ]
 
     print(f"- uart: {uart}")
@@ -177,7 +188,6 @@ def flash_via_uart(firmware, uart):
 
 
 def main():
-
     parser = argparse.ArgumentParser()
     parser.add_argument("method")
     parser.add_argument("firmware", type=Path)
@@ -198,7 +208,7 @@ def main():
     if args.method == "swd":
         if has_gdb_on_path(args.gdb):
             flash_via_gdb(args.gdb, args.bmp, args.firmware, args.enable_power)
-            
+
     elif args.method == "dfu":
         if has_dfu_util_on_path():
             flash_via_dfu(args.firmware)
@@ -206,6 +216,7 @@ def main():
     elif args.method == "uart":
         if has_stm32flash_on_path():
             flash_via_uart(args.firmware, args.uart)
+
 
 if __name__ == "__main__":
     main()
