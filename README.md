@@ -25,7 +25,7 @@ This tool is intended to be used on MacOS only. Thank you to Thea Flowers for th
 3. Install STFU:
 
     ```
-    uv tool install git+https://github.com/sphawes/stfu
+    uv tool install st-flashing-utility
     ```
 
 Done! `stfu` is now on your PATH.
