@@ -1,5 +1,5 @@
 [project]
-name = "stfu"
+name = "st-flashing-utility"
 version = "0.2.0"
 description = "Add your description here"
 readme = "README.md"
